@@ -1,0 +1,180 @@
+Step1: Install prometheus in server
+	 wget https://github.com/prometheus/prometheus/releases/download/v2.41.0/prometheus-2.41.0.linux-amd64.tar.gz
+	tar -xvf prometheus-2.41.0.linux-amd64.tar.gz
+	cd prometheus-2.41.0.linux-amd64/
+Step2: Need to configure server information in Prometheus.yml
+	scrape_configs:
+  	# The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  	- job_name: "monitoring_vm"
+
+    	# metrics_path defaults to '/metrics'
+    	# scheme defaults to 'http'.
+
+    	static_configs:
+      	- targets: ["192.168.1.100:9090"]
+  	- job_name: "satish_vm1"
+        static_configs:
+       - targets: ["192.168.1.41:9100"]
+
+step3: Start Prometheus in server
+	./prometheus --config.file=prometheus.yml
+	./prometheus --config.file=prometheus.yml &
+	nohup ./prometheus --config.file=prometheus.yml > prometheus.log 2>&1 & (to run in background)
+	ps aux | grep prometheus
+
+Step4: Install node Exportal in all VMs which metics need to capture
+	wget https://github.com/prometheus/node_exporter/releases/download/v1.5.0/node_exporter-1.5.0.linux-amd64.tar.gz
+
+Step5: Need to open all port in Linux if required, Need to run in each controller node and all vms:
+	[satish@node1 prometheus-2.41.0.linux-amd64]$ sudo firewall-cmd --zone=public --add-port=9100/tcp --permanent
+	success
+	[satish@node1 prometheus-2.41.0.linux-amd64]$ sudo firewall-cmd --reload
+	success
+	[satish@node1 prometheus-2.41.0.linux-amd64]$ sudo firewall-cmd --zone=public --add-port=9090/tcp --permanent
+	success
+	[satish@node1 prometheus-2.41.0.linux-amd64]$ sudo firewall-cmd --reload
+
+Stpe6: Now we can run in browser with vmip and port no.
+	http://192.168.1.100:9090
+
+
+Step7: Install Grafana server in prometeus server or we can install Grafana server in a separate vm
+	wget -q -O gpg.key https://rpm.grafana.com/gpg.key
+	sudo rpm --import gpg.key
+
+	Create /etc/yum.repos.d/grafana.repo with the following content:
+	[grafana]
+	name=grafana
+	baseurl=https://rpm.grafana.com
+	repo_gpgcheck=1
+	enabled=1
+	gpgcheck=1
+	gpgkey=https://rpm.grafana.com/gpg.key
+	sslverify=1
+	sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+
+	sudo dnf install Grafana
+	sudo dnf install grafana-enterprise
+
+	sudo systemctl stop grafana-server
+	sudo systemctl start grafana-server
+	sudo systemctl status grafana-server
+
+	sudo firewall-cmd --zone=public --add-port=3000/tcp --permanent
+	sudo firewall-cmd --reload
+
+Step8: login to browser:
+	http://192.168.1.100:3000/login
+	userid : admin Password: admin
+	Aryan1215@
+
+step9: In Grafana, add data source, go to Add new Connection -> Select Data Source (Prometheus) --> Connection (Put URL of promateus server) -> save and test
+
+Step10: Now Build a dashboard, click build a dashboard --> Add a visualization --> Select Promateus --> go to query -> kick start your query --> Select Matics -> Select Label filter (Job) --> Worker (vm name) and then apply. 
+
+Step11: Now graph is visualize
+
+
+Install Grafana loki for logs monitoring
+
+Step1: Install Grafana loki server in Monitoring central server
+	dnf update
+	dnf install loki promtail
+	wget https://github.com/grafana/loki/releases/download/v2.8.0/loki-linux-amd64.zip
+ 	wget https://raw.githubusercontent.com/grafana/loki/v2.9.2/cmd/loki/loki-local-config.yaml
+	wget https://raw.githubusercontent.com/grafana/loki/main/clients/cmd/promtail/promtail-local-config.yaml
+	./loki-linux-amd64 -config.file=loki-local-config.yaml
+	
+	sudo firewall-cmd --zone=public --add-port=3100/tcp --permanent
+	sudo firewall-cmd --reload
+Step2:	Now need to paste browser to check loki running status
+	http://192.168.1.100:3100/metrics.
+
+Step3:  Now need to install promtail agent in all VM.
+	wget https://github.com/grafana/loki/releases/download/v3.2.0/promtail-linux-arm64.zip
+	wget https://raw.githubusercontent.com/grafana/loki/main/clients/cmd/promtail/promtail-local-config.yaml
+	ls
+	unzip promtail-linux-arm64.zip                                                                                                                            
+	dnf update
+	
+	Configuration in VM worker node
+	 vi promtail-local-config.yaml 
+	server:
+  	http_listen_port: 9080
+  	grpc_listen_port: 0
+
+	positions:
+  	filename: /tmp/positions.yaml
+
+	clients:
+  	- url: http://192.168.1.100:3100/loki/api/v1/push
+
+	scrape_configs:
+	- job_name: system
+  	static_configs:
+  	- targets:
+     	 - 192.168.1.100
+    	labels:
+      	job: varlogs
+      	__path__: /var/log/*log
+      	stream: stdout
+	
+	Configuration in monitoring vm
+	 vi loki-local-config.yaml
+	auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  instance_addr: 192.168.1.100
+  path_prefix: /tmp/loki
+  storage:
+    filesystem:
+      chunks_directory: /tmp/loki/chunks
+      rules_directory: /tmp/loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+ruler:
+  alertmanager_url: http://192.168.1.100:9093
+
+
+	./promtail-linux-amd64 --config.file=promtail-local-config.yaml     
+
+Step4: Now need to install grafana in monitoring vm and also run loki in background or forground
+	./loki-linux-amd64 -config.file=loki-local-config.yaml
+	./loki-linux-amd64 -config.file=loki-local-config.yaml & (for background)
+
+Step5: Need to open port in Monitoring vm and normal vm
+	sudo firewall-cmd --zone=public --add-port=9093/tcp --permanent
+	sudo firewall-cmd --zone=public --add-port=3100/tcp --permanent
+	sudo firewall-cmd --reload
+Step5: Now need to configure Grafana by usin data souce and then test and connect
+
+Step6: Now need to test Grafana dashboard.
+                                                                                                                          
+
+	
+
+	
