@@ -1,0 +1,32 @@
+Hello, I’m Satish Ranjan. I’ve been working at Capgemini for the last three years, and I have about ten years of experience in IT, with the past four years focused on DevOps. I’m skilled in using Azure, Terraform, Pipelines, Docker, Kubernetes, and Linux. 
+
+Let me give you a quick overview of my current project: 
+
+Current Role Overview 
+I am currently working on a UK-based e-commerce project where I manage Azure infrastructure, primarily focusing on automation and migration strategies. 
+
+Daily Workflow 
+Morning Stand-Up & Planning  : My day begins with a scrum call where we review daily activities, discuss backlogs, and set priorities for our tasks. I utilize Azure Boards to track our progress and ensure timely completion of assignments. 
+
+CI/CD Pipeline Management : After the stand-up, I check the status of our CI/CD pipelines, typically managed with Jenkins or GitLab, to address any issues from the previous day. I work closely with the development team to troubleshoot 
+build problems and optimize automation processes. 
+
+Infrastructure as Code (IaC): A significant part of my role involves infrastructure automation using IaC tools like Terraform. I manage cloud resources, maintaining separate repositories for Terraform modules. This also includes scripting 
+and scaling infrastructure as needed. 
+
+Monitoring Infrastructure: Mid-morning, I monitor system health using tools like Prometheus and Grafana. I address any anomalies or alerts from tools such as Splunk to maintain optimal performance and security. 
+
+ Security & Code Review :Security is crucial in my role. I conduct code reviews to identify vulnerabilities using SonarQube, manage secrets with HashiCorp Vault, and handle access management and security audits. 
+
+Troubleshooting & Issue Resolution : Throughout the day, I focus on troubleshooting production issues, analyzing logs, and collaborating with the development team to resolve problems swiftly. 
+
+Collaboration & Knowledge Sharing : I actively participate in cross-team meetings, sharing updates and documenting improvements. This collaboration helps us align our efforts and enhance our processes. 
+
+Learning & Experimentation : I dedicate time to explore new tools and techniques, whether it's a new Kubernetes feature or an improved deployment strategy, to stay current and innovative. 
+
+End of Day Review : At the end of the day, I review progress, update tasks in Jira, and prepare for the next day’s stand-up. 
+
+Key Projects & Responsibilities  :Migration Initiatives: I am involved in migrating monolithic applications to a microservices architecture using Azure Kubernetes Service (AKS) and ArgoCD. So far, we’ve successfully migrated about 40% of our applications, with 60% remaining. Cloud Adoption Framework: I helped transition all applications from on-premises to the Azure Cloud, following the Cloud Adoption Framework (CAF) for governance, compliance, IAM, monitoring, backup, and disaster recovery. 
+Automation of Infrastructure: I automate our infrastructure pipelines with CI/CD processes, ensuring efficient code deployment once changes are approved. 
+Monitoring Solutions: I set up monitoring solutions for different projects to ensure performance and security. 
+Operational Management: My responsibilities also include managing permissions, addressing production issues, applying patches, performing backups, and troubleshooting network issues. 
